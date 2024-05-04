@@ -1,29 +1,53 @@
 from get_access_token import access_token
+import pandas as pd
+from schemas import Artist
+from pydantic import ValidationError
 import requests
 from typing import Optional
 
 
 url = 'https://api.spotify.com/v1/artists/0Ludmn78UAusTsNCXgICrN?si=iWhh0a1iS727nnUHiq2CpQ'
+schema = Artist
 
 
-def get_artist_data(url: str, acess_token: str, schema):
+def get_data_to_df(url: str, schema):
 
     """
-    Obtém dados de um artista do Spotify usando a API e valida com Pydantic.
+    Obtém dados do Spotify usando a API e valida com Pydantic.
 
     Args:
-        artist_url (str): URL do artista na API do Spotify.
-        access_token (str): Token de acesso para autenticação na API.
-        schema (str) : esquema com os dados para validação.
+        url (str): URL para buscar os dados.
+        schema (pydantic.BaseModel): Classe para validação de dados.
 
     Returns:
-        Optional[Artist]: Instância da classe Artist se validação for bem-sucedida,
+        Optional[schema]: Instância da classe se validação for bem-sucedida,
                           None se houver erro de validação.
     """
     acess_token = access_token()
 
     headers = {'Authorization': f'Bearer {acess_token}'}
 
-    response = requests.request('GET', url = url, headers=headers)
+    response = requests.get(url = url, headers = headers)
 
-    print(response.content)
+    if response.status_code != 200:
+        print("Ocorreu um erro: ", response.status_code)
+        return None
+    
+    data = response.json()
+    
+    try:
+        validate_data = schema(**data)
+        df = pd.DataFrame([validate_data.dict()])
+        df_normalize = pd.json_normalize(df.to_dict(orient='records'))
+        return df_normalize
+    
+    except ValidationError as ve:
+        print("Erro de validação: ", ve)
+        return None
+    
+
+
+
+if __name__ == "__main__":
+    data = get_data_to_df(url, schema)
+    print(data.name)
