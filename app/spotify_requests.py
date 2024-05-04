@@ -4,13 +4,14 @@ from schemas import Artist
 from pydantic import ValidationError
 import requests
 from typing import Optional
+from artists import joao_rock
 
 
-url = 'https://api.spotify.com/v1/artists/0Ludmn78UAusTsNCXgICrN?si=iWhh0a1iS727nnUHiq2CpQ'
+spotify_link = '0Ludmn78UAusTsNCXgICrN?si=iWhh0a1iS727nnUHiq2CpQ'
 schema = Artist
 
 
-def get_data_to_df(url: str, schema):
+def get_data_to_df(spotify_link: str, schema):
 
     """
     Obtém dados do Spotify usando a API e valida com Pydantic.
@@ -23,6 +24,9 @@ def get_data_to_df(url: str, schema):
         Optional[schema]: Instância da classe se validação for bem-sucedida,
                           None se houver erro de validação.
     """
+
+    url = f'https://api.spotify.com/v1/artists/{spotify_link}'
+
     acess_token = access_token()
 
     headers = {'Authorization': f'Bearer {acess_token}'}
@@ -46,8 +50,8 @@ def get_data_to_df(url: str, schema):
         return None
     
 
-
+print("Informações do artista EMICIDA:", joao_rock.get_all_spotify_links())
 
 if __name__ == "__main__":
-    data = get_data_to_df(url, schema)
-    print(data.name)
+    data = get_data_to_df(spotify_link, schema)
+    print(data)
