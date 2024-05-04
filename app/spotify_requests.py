@@ -7,9 +7,6 @@ from typing import Optional
 from artists import joao_rock
 
 
-spotify_link = '0Ludmn78UAusTsNCXgICrN?si=iWhh0a1iS727nnUHiq2CpQ'
-schema = Artist
-
 
 def get_data_to_df(spotify_link: str, schema):
 
@@ -25,13 +22,11 @@ def get_data_to_df(spotify_link: str, schema):
                           None se houver erro de validação.
     """
 
-    url = f'https://api.spotify.com/v1/artists/{spotify_link}'
-
     acess_token = access_token()
 
     headers = {'Authorization': f'Bearer {acess_token}'}
 
-    response = requests.get(url = url, headers = headers)
+    response = requests.get(url = spotify_link, headers = headers)
 
     if response.status_code != 200:
         print("Ocorreu um erro: ", response.status_code)
@@ -49,9 +44,36 @@ def get_data_to_df(spotify_link: str, schema):
         print("Erro de validação: ", ve)
         return None
     
+def fetch_artists_data(festival_data, schema):
+    """
+    Busca dados de artistas no Spotify usando links
 
-print("Informações do artista EMICIDA:", joao_rock.get_all_spotify_links())
+    Args:
+        festival_data (dict): Dicionário com dados dos artistas.
+        schema (pydantic.BaseModel): Classe para validação de dados.
+
+    Returns:
+        pd.DataFrame: DataFrame com os dados dos artistas.
+    """
+    all_artists_df = pd.DataFrame()
+
+    for link in festival_data:
+        spotify_url = f'https://api.spotify.com/v1/artists/{link}'
+
+        print(spotify_url)
+
+        artist_df = get_data_to_df(spotify_url, schema)
+
+        if artist_df is not None:
+            all_artists_df = pd.concat([all_artists_df, artist_df], ignore_index=True)
+
+    return all_artists_df
+
+
 
 if __name__ == "__main__":
-    data = get_data_to_df(spotify_link, schema)
+    #spotify_link = '0Ludmn78UAusTsNCXgICrN?si=iWhh0a1iS727nnUHiq2CpQ'
+    schema = Artist
+    festival_data = joao_rock.get_all_spotify_links()
+    data = fetch_artists_data(festival_data, schema)
     print(data)
