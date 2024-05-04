@@ -53,15 +53,13 @@ def execute_sql_script(script_path):
 
     engine = create_engine(DATABASE_URI)
     
-    # Lendo o script SQL do arquivo
     with open(script_path, 'r') as file:
         sql_script = file.read()
 
         print(sql_script)
 
-    # Conectando ao banco de dados
     with engine.connect() as connection:
-        # Usar a função text() para criar um objeto SQL executável
+
         try:
             connection.execute(text(sql_script))
             return f"Script '{script_path}' executado com sucesso."
@@ -69,15 +67,3 @@ def execute_sql_script(script_path):
             return f"Erro ao executar o script: {e}"
 
     return "Terminou"
-
-def test_connection():
-    engine = create_engine(DATABASE_URI)
-    try:
-        with engine.connect() as connection:
-            # Use a função 'text' para garantir que o SQL seja interpretado corretamente
-            result = connection.execute(text("SELECT 1"))
-            return "Conexão bem-sucedida"
-    except Exception as e:
-        return f"Erro ao conectar: {e}"
-
-print(test_connection())

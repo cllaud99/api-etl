@@ -11,13 +11,3 @@ if __name__ == "__main__":
     #data = fetch_artists_data(festival_data, schema)
     #df_to_database ("artistas", data)
 
-def test_connection():
-    engine = create_engine(DATABASE_URI)
-    try:
-        with engine.connect() as connection:
-            result = connection.execute("SELECT 1")
-            return "Conexão bem-sucedida"
-    except Exception as e:
-        return f"Erro ao conectar: {e}"
-
-print(test_connection())
