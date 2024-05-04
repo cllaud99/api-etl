@@ -2,6 +2,7 @@ import pandas as pd
 from sqlalchemy import create_engine, text
 from sqlalchemy.exc import SQLAlchemyError
 from dotenv import load_dotenv
+import logging
 import os
 
 load_dotenv()
@@ -16,54 +17,56 @@ DATABASE_URI = f"postgresql://{db_user}:{db_password}@{db_host}:{db_port}/{db_na
 
 def df_to_database(table_name, df):
     """
-    Função que recebe um dataframe e armazena os dados em um banco PostgreSQL:
-    Args:
-        DATABASE_URI (str): cadeia de caracteres para conectar no banco de dados
-        table_name (str): nome da tabela destino
-        df (pd.DataFrame): dataframe que será armazenado
-    Returns:
-        str: mensagem de sucesso ou erro
-    """
-    try:
-
-        engine = create_engine(DATABASE_URI)
-
-        with engine.begin() as connection:
-            df.to_sql(name=table_name, con=connection, if_exists='replace', index=False)
-
-        return f"Dados armazenados com sucesso na tabela '{table_name}'."
-
-    except SQLAlchemyError as e:
-        return f"Erro ao armazenar dados: {str(e)}"
-
-    except Exception as e:
-        return f"Erro inesperado: {str(e)}"
-    
-
-def execute_sql_script(script_path):
-    """
-    Função que executa um script SQL a partir de um arquivo.
+    Função para armazenar um DataFrame em um banco PostgreSQL.
     
     Args:
-        script_path (str): Caminho do arquivo de script SQL.
-    
+        database_uri (str): URI para conexão com o banco de dados.
+        table_name (str): Nome da tabela destino.
+        df (pd.DataFrame): DataFrame que será armazenado.
+        
     Returns:
         str: Mensagem de sucesso ou erro.
     """
 
-    engine = create_engine(DATABASE_URI)
+    if df.empty:
+        return "DataFrame está vazio, nada para armazenar."
+
+    try:
+        engine = create_engine(DATABASE_URI, echo=True)
+        print("Conexão criada")
+    except SQLAlchemyError as e:
+        return f"Erro ao conectar ao banco de dados: {type(e).__name__}: {str(e)}"
+
+    # Tenta armazenar os dados no banco de dados
+    try:
+        with engine.begin() as connection:
+            df.to_sql(name=table_name, con=connection, if_exists='replace', index=False)
+            print("Estamos no with")
+        return f"Dados armazenados com sucesso na tabela '{table_name}'."
+    except SQLAlchemyError as e:
+        return f"Erro ao armazenar dados no banco: {type(e).__name__}: {str(e)}"
+    except Exception as e:
+        return f"Erro inesperado: {type(e).__name__}: {str(e)}"
     
-    with open(script_path, 'r') as file:
-        sql_script = file.read()
+def execute_sql_file(sql_file_path):
+    try:
 
-        print(sql_script)
+        engine = create_engine(DATABASE_URI)
+        
+        with open(sql_file_path, 'r') as f:
+            sql = f.read() 
+        
+        with engine.begin() as connection: 
 
-    with engine.connect() as connection:
+            connection.execute(text(sql))
+            print("Comando SQL do arquivo executado com sucesso")
+    
+    except SQLAlchemyError as e:
 
-        try:
-            connection.execute(text(sql_script))
-            return f"Script '{script_path}' executado com sucesso."
-        except Exception as e:
-            return f"Erro ao executar o script: {e}"
+        print("Erro ao executar comando SQL:", str(e))
+    except FileNotFoundError:
 
-    return "Terminou"
+        print(f"Arquivo '{sql_file_path}' não encontrado")
+    except Exception as e:
+
+        print("Erro inesperado:", str(e))

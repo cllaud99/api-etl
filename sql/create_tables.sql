@@ -1,12 +1,22 @@
 CREATE TABLE IF NOT EXISTS spotify_artist (
-    genres TEXT[],  -- Um array de gêneros musicais associados ao artista
-    href VARCHAR(255),  -- URL para o recurso do artista na API do Spotify
-    id VARCHAR(50) PRIMARY KEY,  -- Identificador único do artista no Spotify
-    name VARCHAR(100),  -- Nome do artista
-    popularity INT,  -- Nível de popularidade do artista
-    type VARCHAR(50),  -- Tipo do objeto, neste caso, 'artist'
-    uri VARCHAR(100),  -- URI único do Spotify para o artista
-    external_urls_spotify VARCHAR(255),  -- URL para o perfil do artista no site do Spotify
-    followers_href VARCHAR(255),  -- URL para os dados dos seguidores (pode ser nulo)
-    followers_total INT  -- Número total de seguidores do artista
+    href TEXT,
+    id TEXT,
+    name TEXT,
+    popularity BIGINT,
+    type TEXT,
+    uri TEXT,
+    external_urls_spotify TEXT,
+    followers_href TEXT,
+    followers_total BIGINT,
+    images_0_height BIGINT,
+    images_0_url TEXT,
+    images_0_width BIGINT,
+    images_1_height BIGINT,
+    images_1_url TEXT,
+    images_1_width BIGINT,
+    images_2_height BIGINT,
+    images_2_url TEXT,
+    images_2_width BIGINT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (id)
 );

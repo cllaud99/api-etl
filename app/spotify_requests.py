@@ -1,12 +1,32 @@
 from get_access_token import access_token
 import pandas as pd
 from schemas import Artist
-from pydantic import ValidationError
+from pydantic import ValidationError, BaseModel, HttpUrl, AnyUrl
 import requests
 from typing import Optional
 from artists import joao_rock
 
 
+def has_nested(data):
+    if isinstance(data, dict) or isinstance(data, list):
+        return True
+    return False
+
+def recursive_normalize(df):
+    while True:
+        # Encontra todas as colunas que contêm dados aninhados
+        nested_cols = [col for col in df.columns if df[col].apply(has_nested).any()]
+        print("rodou recursive")
+        if not nested_cols:
+            break 
+        
+        for col in nested_cols:
+
+            df_normalized = pd.json_normalize(df[col])
+            df_normalized.columns = [f"{col}_{c}" for c in df_normalized.columns]
+            df = pd.concat([df, df_normalized], axis=1).drop(columns=[col])
+    
+    return df
 
 def get_data_to_df(spotify_link: str, schema):
 
@@ -35,10 +55,28 @@ def get_data_to_df(spotify_link: str, schema):
     data = response.json()
     
     try:
-        validate_data = schema(**data)
-        df = pd.DataFrame([validate_data.dict()])
-        df_normalize = pd.json_normalize(df.to_dict(orient='records'))
-        return df_normalize
+        validated_data = schema(**data)
+
+        df = pd.DataFrame([validated_data.dict()])
+
+
+        def flatten(value):
+            if isinstance(value, AnyUrl):
+                return str(value) 
+            elif isinstance(value, list):
+
+                return [flatten(item) for item in value]
+            elif isinstance(value, dict):
+                return {k: flatten(v) for k, v in value.items()}
+            else:
+                return value
+
+        df = df.applymap(lambda x: flatten(x)) 
+
+        if recursive_normalize:
+            df = recursive_normalize(df)
+
+        return df
     
     except ValidationError as ve:
         print("Erro de validação: ", ve)
@@ -66,8 +104,11 @@ def fetch_artists_data(festival_data, schema):
 
         if artist_df is not None:
             all_artists_df = pd.concat([all_artists_df, artist_df], ignore_index=True)
+            all_artists_df['created_at'] = pd.Timestamp.now()
 
     return all_artists_df
+
+
 
 
 
