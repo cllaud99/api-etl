@@ -15,7 +15,7 @@ db_name = os.getenv("DB_NAME")
 
 DATABASE_URI = f"postgresql://{db_user}:{db_password}@{db_host}:{db_port}/{db_name}"
 
-def df_to_database(table_name, df):
+def df_to_database(table_name, df, schema='public'):
     """
     Função para armazenar um DataFrame em um banco PostgreSQL.
     
@@ -40,7 +40,7 @@ def df_to_database(table_name, df):
     # Tenta armazenar os dados no banco de dados
     try:
         with engine.begin() as connection:
-            df.to_sql(name=table_name, con=connection, if_exists='replace', index=False)
+            df.to_sql(name=table_name, con=connection, if_exists='replace', index=False, schema=schema)
             print("Estamos no with")
         return f"Dados armazenados com sucesso na tabela '{table_name}'."
     except SQLAlchemyError as e:

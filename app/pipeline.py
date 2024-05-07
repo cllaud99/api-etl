@@ -22,6 +22,6 @@ if __name__ == "__main__":
     data = fetch_artists_data(festival_data, schema)
     print(data.dtypes)
     print(data)
-    teste = df_to_database('spotify_artist', data)
+    teste = df_to_database('spotify_artist', data, 'bronze')
     print(teste)
 

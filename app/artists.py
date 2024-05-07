@@ -1,3 +1,5 @@
+import pandas as pd
+
 class FestivalJoaoRock:
     def __init__(self, festival_data):
         self.artistas = festival_data
@@ -46,6 +48,12 @@ class FestivalJoaoRock:
                     links_por_palco[palco] = []
                 links_por_palco[palco].append(info["spotify_link"])
         return links_por_palco
+    
+    def get_dataframe(self):
+        """Retorna todos os dados do festival como um DataFrame do pandas."""
+        df = pd.DataFrame(self.artistas).transpose().reset_index()
+        df.rename(columns={"index": "artista"}, inplace=True)
+        return df
 
 
 
