@@ -70,3 +70,39 @@ def execute_sql_file(sql_file_path):
     except Exception as e:
 
         print("Erro inesperado:", str(e))
+
+
+def execute_sql_file_to_dict(sql_file_path):
+    """
+    Função para executar um arquivo SQL e retornar um dicionário com o resultado.
+    
+    Args:
+        sql_file_path (str): Caminho para o arquivo SQL.
+        
+    Returns:
+        dict: Dicionário contendo o resultado do comando SQL.
+    """
+
+    # Inicializa um dicionário vazio em caso de erro
+    result_dict = {}
+
+    try:
+        engine = create_engine(DATABASE_URI)
+        
+        with open(sql_file_path, 'r') as f:
+            sql = f.read()
+
+        # Executa a query e converte o resultado para um dicionário
+        with engine.connect() as connection:
+            df = pd.read_sql_query(text(sql), connection)
+            result_dict = df.to_dict(orient='records')  # Converte para dicionário
+            print("Comando SQL do arquivo executado com sucesso e resultado retornado como dicionário")
+
+    except SQLAlchemyError as e:
+        print("Erro ao executar comando SQL:", str(e))
+    except FileNotFoundError:
+        print(f"Arquivo '{sql_file_path}' não encontrado")
+    except Exception as e:
+        print("Erro inesperado:", str(e))
+    
+    return result_dict

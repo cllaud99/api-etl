@@ -96,7 +96,7 @@ def fetch_artists_data(festival_data, schema):
     all_artists_df = pd.DataFrame()
 
     for link in festival_data:
-        spotify_url = f'https://api.spotify.com/v1/artists/{link}'
+        spotify_url = f'https://api.spotify.com/v1/artists/{link}/albums'
 
         print(spotify_url)
 

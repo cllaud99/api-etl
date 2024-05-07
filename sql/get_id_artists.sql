@@ -1,4 +1,5 @@
 SELECT
 	DISTINCT id
 FROM
-	spotify_artist sa
+	bronze.spotify_artist sa
+LIMIT 2
